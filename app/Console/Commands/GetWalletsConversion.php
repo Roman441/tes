@@ -7,14 +7,14 @@ use DB;
 use App\Wallets;
 use App\Http\Controllers\GetCurrencyController;
 
-class GetWallets extends Command
+class GetWalletsConversion extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:wallet {currency}';
+    protected $signature = 'get:walletConversion {currency} {type}';
 
     /**
      * The console command description.
@@ -41,9 +41,12 @@ class GetWallets extends Command
     public function handle()
     {
         $obj = new GetCurrencyController();
+        $obj->type = $this->argument('type');
+        $sus = $obj->getAll();
+
 
         $wallet = Wallets::where('name', $this->argument('currency'))->first();
-        $headers = ['Type', 'Summ in other currency', 'Summ in RUB'];
+        $headers = ['Type', 'Summ in RUB', "Summ in {$this->argument('type')}"];
         $accumulat = $wallet->accumulations;
         $body = array();
 
@@ -51,12 +54,11 @@ class GetWallets extends Command
             $cur = $k->currencys;
 
             if ($cur["type"] != "RUB"){
-                $obj->type = $cur["type"];
-                $sus = $k["summ"] * ($obj->getAll());
+                $susd = $k["summ"] * $sus;
             } else {
-                $sus = $k["summ"];
+                $susd = $k["summ"];
             }
-                array_push($body, (array($cur["type"],  $sus, $k["summ"])));
+                array_push($body, (array($cur["type"], $k["summ"], $susd)));
         }
           $this->table($headers, $body);
     }
