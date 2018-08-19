@@ -13,5 +13,5 @@ class Accumulations extends Model
         return $this->belongsTo(Currencys::class, 'currency_id');
     }
 
-    protected $fillable = ['title', 'body'];
+    protected $fillable = ['summ'];
 }

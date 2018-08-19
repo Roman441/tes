@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use DB;
 use App\Wallets;
+use App\Currencys;
+use App\Accumulations;
 use App\Http\Controllers\GetCurrencyController;
 
 class TransactionsWallets extends Command
@@ -14,7 +16,7 @@ class TransactionsWallets extends Command
      *
      * @var string
      */
-    protected $signature = 'transaction:wallet {currency}';
+    protected $signature = 'transaction:wallet {currency} {type_operation} {numeral} {type_currency}';
 
     /**
      * The console command description.
@@ -40,24 +42,27 @@ class TransactionsWallets extends Command
      */
     public function handle()
     {
-        $obj = new GetCurrencyController();
-
-        $wallet = Wallets::where('name', $this->argument('currency'))->first();
-        $headers = ['Type', 'Summ'];
-        $accumulat = $wallet->accumulations;
+        
+        $headers = ['Type', 'Summ in RUB', "Summ in {$this->argument('type_currency')}"];
+        $typeCurrency = Currencys::where('type', $this->argument('type_currency'))->first();
+        $w = $typeCurrency->accumulations->first();
         $body = array();
-
-        foreach($accumulat as $k){
-            $cur = $k->currencys;
-
-            if ($cur["type"] != "RUB"){
-                $obj->type = $cur["type"];
-                $sus = $k["summ"] * ($obj->get());
-            } else {
-                $sus = $k["summ"];
-            }
-                array_push($body, (array($cur["type"],  $sus)));
-        }
-          $this->table($headers, $body);
+      
+        switch ($this->argument('type_operation')) {
+            case '+':
+                $newSum = $w["summ"] + $this->argument('numeral');
+                Accumulations::find($w["id"])->update(['summ' => $newSum]);
+                $this->error($newSum);
+                break;
+            case '-':
+                $newSum = $w["summ"] - $this->argument('numeral');
+                if ($newSum < 0) {
+                    $newSum = $w["summ"];
+                    $this->error('Оперция не может быть выполнена!');
+                } else {
+                    Accumulations::find($w["id"])->update(['summ' => $newSum]);
+                }
+                break;
+        } 
     }
 }
