@@ -20,7 +20,6 @@ class CreateAccumulationsTable extends Migration
             $table->integer('wallet_id')->unsigned();
             $table->foreign('wallet_id')->references('id')->on('wallets');
             $table->float('summ');
-            $table->timestamps();
         });
     }
 

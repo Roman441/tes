@@ -1,4 +1,8 @@
 <?php
+/**
+ * @author Komlev.R
+ */
+
 
 namespace App\Console\Commands;
 
@@ -14,7 +18,7 @@ class GetWallets extends Command
      *
      * @var string
      */
-    protected $signature = 'get:wallet {currency}';
+    protected $signature = 'get:wallet {name}';
 
     /**
      * The console command description.
@@ -34,30 +38,35 @@ class GetWallets extends Command
     }
 
     /**
-     * Execute the console command.
-     *
-     * @return mixed
+     * @param string $name string to input
+     * @return value of wallets state
      */
     public function handle()
     {
         $obj = new GetCurrencyController();
 
-        $wallet = Wallets::where('name', $this->argument('currency'))->first();
-        $headers = ['Type', 'Summ in other currency', 'Summ in RUB'];
-        $accumulat = $wallet->accumulations;
-        $body = array();
+        $wallet = Wallets::where('name', $this->argument('name'))->first();
+        if (isset($wallet)) 
+        {  
+            $accumulat = $wallet->accumulations;
+ 
+            $headers = ['Type', 'Summ in RUB', 'Summ in other currency'];
+            $body = array();
 
-        foreach($accumulat as $k){
-            $cur = $k->currencys;
+            foreach($accumulat as $k){
+                $cur = $k->currencys;
 
-            if ($cur["type"] != "RUB"){
-                $obj->type = $cur["type"];
-                $sus = $k["summ"] * ($obj->getAll());
-            } else {
-                $sus = $k["summ"];
-            }
+                if ($cur["type"] != "RUB"){
+                    $obj->type = $cur["type"];
+                    $sus = $k["summ"] * ($obj->getAll());
+                } else {
+                    $sus = $k["summ"];
+                }
                 array_push($body, (array($cur["type"],  $sus, $k["summ"])));
+            }
+            $this->table($headers, $body);
+        } else {
+            $this->error('Такого кошелька не существует!');
         }
-          $this->table($headers, $body);
     }
 }

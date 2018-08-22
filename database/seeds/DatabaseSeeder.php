@@ -36,18 +36,22 @@ class DatabaseSeeder extends Seeder
             [
                 'currency_id' => 1,
                 'wallet_id' => 1,
+                'summ' => 0,
             ],
             [
                 'currency_id' => 2,
                 'wallet_id' => 1,
+                'summ' => 0,
             ],
             [
                 'currency_id' => 3,
                 'wallet_id' => 1,
+                'summ' => 0,
             ],
             [
                 'currency_id' => 4,
                 'wallet_id' => 1,
+                'summ' => 0,
             ] 
         ]);
     }

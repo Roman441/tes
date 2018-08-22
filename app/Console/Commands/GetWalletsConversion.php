@@ -1,4 +1,7 @@
 <?php
+/**
+ * @author Komlev.R
+ */
 
 namespace App\Console\Commands;
 
@@ -34,9 +37,8 @@ class GetWalletsConversion extends Command
     }
 
     /**
-     * Execute the console command.
-     *
-     * @return mixed
+     * @param string $currency, $type string to input
+     * @return value of wallets state
      */
     public function handle()
     {
@@ -46,20 +48,26 @@ class GetWalletsConversion extends Command
 
 
         $wallet = Wallets::where('name', $this->argument('currency'))->first();
-        $headers = ['Type', 'Summ in RUB', "Summ in {$this->argument('type')}"];
-        $accumulat = $wallet->accumulations;
-        $body = array();
+        if (isset($wallet))
+        {
+            $accumulat = $wallet->accumulations;
+   
+            $headers = ['Type', 'Summ in RUB', "Summ in {$this->argument('type')}"];
+            $body = array();
 
-        foreach($accumulat as $k){
-            $cur = $k->currencys;
+            foreach($accumulat as $k){
+                $cur = $k->currencys;
 
-            if ($cur["type"] != "RUB"){
-                $susd = $k["summ"] * $sus;
-            } else {
-                $susd = $k["summ"];
-            }
+                if ($cur["type"] != "RUB"){
+                    $susd = $k["summ"] * $sus;
+                } else {
+                    $susd = $k["summ"];
+                }
                 array_push($body, (array($cur["type"], $k["summ"], $susd)));
+            }
+            $this->table($headers, $body);
+        } else {
+            $this->error('Такого кошелька не существует!');
         }
-          $this->table($headers, $body);
     }
 }
